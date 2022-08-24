@@ -1,19 +1,28 @@
 # R3LIVE
 ## A Robust, Real-time, RGB-colored, LiDAR-Inertial-Visual tightly-coupled state Estimation and mapping package
 
-## News
-
-**[Jan 28, 2022] Release of our hardware design**: The CAD files of our hardware design are now available in [rxlive_handheld](https://github.com/ziv-lin/rxlive_handheld). You can download, print, edit and  assemble our handheld device by following the guides.
-
-**[Jan 14, 2022] Add support of spinning LiDAR**: Give an example of launching R3LIVE with a spinning LIDAR (see section 7).
 
 ## 1. Introduction
 **R3LIVE** is a novel LiDAR-Inertial-Visual sensor fusion framework, which takes advantage of measurement of LiDAR, inertial, and visual sensors to achieve robust and accurate state estimation. R3LIVE is built upon our previous work [R2LIVE](https://github.com/hku-mars/r2live), is contained of two subsystems: the LiDAR-inertial odometry (LIO) and the visual-inertial odometry (VIO). The LIO subsystem ([FAST-LIO](https://github.com/hku-mars/FAST_LIO)) takes advantage of the measurement from LiDAR and inertial sensors and builds the geometric structure of (i.e. the position of 3D points) global maps. The VIO subsystem utilizes the data of visual-inertial sensors and renders the map's texture (i.e. the color of 3D points). <br>
-&emsp; Our preprint paper is available [here](https://github.com/hku-mars/r3live/blob/master/papers/R3LIVE:%20A%20Robust%2C%20Real-time%2C%20RGB-colored%2C%20LiDAR-Inertial-Visual%20tightly-coupled%20stateEstimation%20and%20mapping%20package.pdf), with our accompanying videos are now available on YouTube (click below images to open) and Bilibili<sup>[1](https://www.bilibili.com/video/BV1d341117d6?share_source=copy_web), [2](https://www.bilibili.com/video/BV1e3411q7Di?share_source=copy_web)</sup>.
+
+The source code of this package is released under [**GPLv2**](http://www.gnu.org/licenses/) license. We only allow it free for personal and academic usage. For commercial use, please contact me <ziv.lin.ljrATgmail.com> and Dr. Fu Zhang <fuzhangAThku.hk> to negotiate a different license.
+
+### 1.1 Our paper
+Our paper has been accepted to **ICRA2022**, which is
+available online on this [page](https://ieeexplore.ieee.org/document/9811935) or be downloaded [here](https://github.com/hku-mars/r3live/blob/master/papers/R3LIVE%20--%20A%20Robust%2C%20Real-time%2C%20RGB-colored%2C%20LiDAR-Inertial-Visual%20tightly-coupled%20stateEstimation%20and%20mapping%20package.pdf).
+
+### 1.2 Our accompanying videos
+Our **accompanying videos** are now available on YouTube (click below images to open) and Bilibili<sup>[1](https://www.bilibili.com/video/BV1d341117d6?share_source=copy_web), [2](https://www.bilibili.com/video/BV1e3411q7Di?share_source=copy_web)</sup>.
 <div align="center">
-<a href="https://youtu.be/j5fT8NE5fdg" target="_blank"><img src="https://github.com/ziv-lin/r3live_dataset/blob/main/pics/R3LIVE_paper.jpg" alt="video" width="49%" /></a>
-<a href="https://youtu.be/4rjrrLgL3nk" target="_blank"><img src="https://github.com/ziv-lin/r3live_dataset/blob/main/pics/R3LIVE_demos.jpg" alt="video" width="49%" /></a>
+<a href="https://youtu.be/j5fT8NE5fdg" target="_blank"><img src="https://github.com/ziv-lin/r3live_dataset/blob/main/pics/R3LIVE_paper.jpg" alt="video" width="48%" /></a>
+<a href="https://youtu.be/4rjrrLgL3nk" target="_blank"><img src="https://github.com/ziv-lin/r3live_dataset/blob/main/pics/R3LIVE_demos.jpg" alt="video" width="48%" /></a>
 </div>
+
+### 1.3 Our associate dataset: R3LIVE-dataset
+Our associate dataset [**R3LIVE-dataset**](https://github.com/ziv-lin/r3live_dataset) that use for evaluation is also available online. You can access and download our datasets via this [**Github repository**](https://github.com/ziv-lin/r3live_dataset).
+
+### 1.4 Our open-source hardware design
+All of the mechanical modules of our handheld device that use for data collection are designed as FDM printable, with the schematics of the design are also open-sourced in this [**Github repository**](https://github.com/ziv-lin/rxlive_handheld).
 
 ## 2. What can R3LIVE do?
 
@@ -22,14 +31,14 @@ R3LIVE is robust enough to work well in various of LiDAR-degenerated scenarios (
 <div align="center">
 <img src="https://github.com/ziv-lin/r3live_dataset/blob/main/pics/degenerate_01_pic.png" width="98%" />
 <img src="https://github.com/ziv-lin/r3live_dataset/blob/main/pics/degenerate_02_pic.png" width="98%" />
-<img src="https://github.com/ziv-lin/r3live_dataset/blob/main/gifs/degenerate_01.gif"  width="49%" />
-<img src="https://github.com/ziv-lin/r3live_dataset/blob/main/gifs/degenerate_02.gif"  width="49%" />
+<img src="https://github.com/ziv-lin/r3live_dataset/blob/main/gifs/degenerate_01.gif"  width="48%" />
+<img src="https://github.com/ziv-lin/r3live_dataset/blob/main/gifs/degenerate_02.gif"  width="48%" />
 </div>
 
 And even in simultaneously LiDAR degenerated and visual texture-less environments (see Experiment-1 of our [paper](https://github.com/hku-mars/r3live/blob/master/papers/R3LIVE:%20A%20Robust%2C%20Real-time%2C%20RGB-colored%2C%20LiDAR-Inertial-Visual%20tightly-coupled%20stateEstimation%20and%20mapping%20package.pdf)).  
 <div align="center">
-<img src="https://github.com/ziv-lin/r3live_dataset/blob/main/pics/exp_00.png" alt="video" width="49%" />
-<img src="https://github.com/ziv-lin/r3live_dataset/blob/main/gifs/degenerate_00.gif" alt="video" width="49%" />
+<img src="https://github.com/ziv-lin/r3live_dataset/blob/main/pics/exp_00.png" alt="video" width="48%" />
+<img src="https://github.com/ziv-lin/r3live_dataset/blob/main/gifs/degenerate_00.gif" alt="video" width="48%" />
 </div>
 
 ### 2.2 Real-time RGB maps reconstruction
@@ -38,16 +47,16 @@ R3LIVE is able to reconstruct the precise, dense, 3D, RGB-colored maps of surrou
 <img src="https://github.com/ziv-lin/r3live_dataset/blob/main/pics/cover_half.jpg" width = 98% />
 <img src="https://github.com/ziv-lin/r3live_dataset/blob/main/pics/hku_campus_seq_01.png" width = 98% />
 <img src="https://github.com/ziv-lin/r3live_dataset/blob/main/pics/hku_park_01.png" width = 98% />
-<img src="https://github.com/ziv-lin/r3live_dataset/blob/main/gifs/hku_demo.gif"  width="49%" />
-<img src="https://github.com/ziv-lin/r3live_dataset/blob/main/gifs/hkust_demo.gif" alt="video" width="49%" />
+<img src="https://github.com/ziv-lin/r3live_dataset/blob/main/gifs/hku_demo.gif"  width="48%" />
+<img src="https://github.com/ziv-lin/r3live_dataset/blob/main/gifs/hkust_demo.gif" alt="video" width="48%" />
 </div>
 
 ### 2.3 Ready for 3D applications
 To make R3LIVE more extensible, we also provide a series of offline utilities for reconstructing and texturing meshes, which further reduce the gap between R3LIVE and various 3D applications (watch this [video](https://youtu.be/4rjrrLgL3nk)).
 <div align="center">
 <img src="https://github.com/ziv-lin/r3live_dataset/blob/main/pics/mesh.png" alt="video" width="98%" />
-<img src="https://github.com/ziv-lin/r3live_dataset/blob/main/gifs/ue_game_0.gif" alt="video" width="49%" />
-<img src="https://github.com/ziv-lin/r3live_dataset/blob/main/gifs/ue_game_1.gif"  width="49%" />
+<img src="https://github.com/ziv-lin/r3live_dataset/blob/main/gifs/ue_game_0.gif" alt="video" width="48%" />
+<img src="https://github.com/ziv-lin/r3live_dataset/blob/main/gifs/ue_game_1.gif"  width="48%" />
 </div>
 
 ## 3. Prerequisites
@@ -179,7 +188,7 @@ In the development of R3LIVE, we stand on the shoulders of the following reposit
 9. [CGAL](): A C++ Computational Geometry Algorithms Library.
 
 ## License
-The source code is released under [GPLv2](http://www.gnu.org/licenses/) license.
+The source code of this package is released under [**GPLv2**](http://www.gnu.org/licenses/) license. We only allow it free for personal and academic usage. For commercial use, please contact me <ziv.lin.ljrATgmail.com> and Dr. Fu Zhang <fuzhangAThku.hk> to negotiate a different license.
 
 We are still working on improving the performance and reliability of our codes. For any technical issues, please contact me via email Jiarong Lin < ziv.lin.ljrATgmail.com >.
 
@@ -192,5 +201,3 @@ If you use any code of this repo in your academic research, please cite **at lea
 [5] Cai, Yixi, Wei Xu, and Fu Zhang. "ikd-Tree: An Incremental KD Tree for Robotic Applications."
 [6] Lin, Jiarong, and Fu Zhang. "Loam-livox: A fast, robust, high-precision LiDAR odometry and mapping package for LiDARs of small FoV."
 ```
-
-For commercial use, please contact me < ziv.lin.ljrATgmail.com > and Dr. Fu Zhang < fuzhangAThku.hk >.
