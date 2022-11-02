@@ -46,6 +46,7 @@ Dr. Fu Zhang < fuzhang@hku.hk >.
  POSSIBILITY OF SUCH DAMAGE.
 */
 #include "r3live.hpp"
+#include "modify.h"
 
 void R3LIVE::imu_cbk( const sensor_msgs::Imu::ConstPtr &msg_in )
 {
@@ -110,6 +111,33 @@ bool R3LIVE::get_pointcloud_data_from_ros_message( sensor_msgs::PointCloud2::Con
             pcl::fromROSMsg( *msg, pcl_pc );
             return true;
         }
+        // else if ( ( msg->fields.size() == 6 ) && ( msg->fields[ 3 ].name == "intensity" ) && ( msg->fields[ 4 ].name == "ring" ) && msg->fields[5].name=="time") // Input message type is pcl::PointXYZIRT
+        // {
+        //     pcl::PointCloud<velodyne_ros::Point> pcl_pc_in;
+        //     pcl::fromROSMsg( *msg, pcl_pc_in );
+        //     int    pt_count = 0;
+
+        //     pcl_pc.resize( pcl_pc_in.size() );
+        //     for ( size_t i = 0; i < pcl_pc_in.points.size(); i++ )
+        //     {
+        //         pcl::PointXYZINormal pcl_pc_in_point;
+        //         pcl_pc_in_point.x = pcl_pc_in.points[ i ].x;
+        //         pcl_pc_in_point.y = pcl_pc_in.points[ i ].y;
+        //         pcl_pc_in_point.z = pcl_pc_in.points[ i ].z;
+        //         pcl_pc_in_point.intensity = pcl_pc_in.points[ i ].intensity;
+        //         pcl_pc_in_point.curvature = 0;
+        //         // pcl_pc_in_point.normal_x = pcl_pc_in.points[ i ].ring;
+        //         // pcl_pc_in_point.normal_y = pcl_pc_in.points[ i ].ring;
+        //         // pcl_pc_in_point.normal_z = pcl_pc_in.points[ i ].ring;
+        //         // pcl_pc_in_point.ring = pcl_pc_in.points[ i ].time;
+        //         pcl_pc.points[ pt_count ] = pcl_pc_in_point;
+        //         pt_count++;
+        //         // res_pc.points.push_back( pcl_pc );
+        //     }
+        //     pcl_pc.points.resize(pt_count);
+
+        //     return true;
+        // }
         else if ( ( msg->fields.size() == 4 ) && ( msg->fields[ 3 ].name == "rgb" ) )
         {
             double maximum_range = 5;

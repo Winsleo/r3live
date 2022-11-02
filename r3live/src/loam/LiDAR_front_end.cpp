@@ -1,8 +1,8 @@
 #include <ros/ros.h>
 #include <pcl_conversions/pcl_conversions.h>
-#include <sensor_msgs/PointCloud2.h>
 #include <livox_ros_driver/CustomMsg.h>
 #include "../tools/tools_logger.hpp"
+#include "modify.h"
 
 using namespace std;
 
@@ -17,7 +17,8 @@ enum LID_TYPE
     MID,
     HORIZON,
     VELO16,
-    OUST64
+    OUST64,
+    RS32
 };
 
 enum Feature
@@ -82,6 +83,7 @@ void   mid_handler( const sensor_msgs::PointCloud2::ConstPtr &msg );
 void   horizon_handler( const livox_ros_driver::CustomMsg::ConstPtr &msg );
 void   velo16_handler( const sensor_msgs::PointCloud2::ConstPtr &msg );
 void   oust64_handler( const sensor_msgs::PointCloud2::ConstPtr &msg );
+void   rs32_handler( const sensor_msgs::PointCloud2::ConstPtr &msg );
 void   give_feature( pcl::PointCloud< PointType > &pl, vector< orgtype > &types, pcl::PointCloud< PointType > &pl_corn,
                      pcl::PointCloud< PointType > &pl_surf );
 void   pub_func( pcl::PointCloud< PointType > &pl, ros::Publisher pub, const ros::Time &ct );
@@ -145,6 +147,10 @@ int main( int argc, char **argv )
         sub_points = n.subscribe( "/os_cloud_node/points", 1000, oust64_handler, ros::TransportHints().tcpNoDelay() );
         break;
 
+    case RS32:
+        printf( "RS32\n" );
+        sub_points = n.subscribe( "/rslidar_points", 1000, rs32_handler, ros::TransportHints().tcpNoDelay() );
+        break;
     default:
         printf( "Lidar type is wrong.\n" );
         exit( 0 );
@@ -288,42 +294,49 @@ int orders[ 16 ] = { 0, 2, 4, 6, 8, 10, 12, 14, 1, 3, 5, 7, 9, 11, 13, 15 };
 
 void velo16_handler( const sensor_msgs::PointCloud2::ConstPtr &msg )
 {
-    // TODO
+    pcl::PointCloud< PointType > pl_processed;
+    pcl::PointCloud<velodyne_ros::Point> pl_orig;
+    pcl::fromROSMsg(*msg, pl_orig);
+    int plsize = pl_orig.points.size();
+
+    if (plsize == 0) return;
+    // pl_surf.reserve(plsize);
+    double time_stamp = msg->header.stamp.toSec();
+    pl_processed.clear();
+    pl_processed.reserve( pl_orig.points.size() );
+
+    for ( int i = 0; i < pl_orig.points.size(); i++ )
+    {
+        double range = std::sqrt( pl_orig.points[ i ].x * pl_orig.points[ i ].x + pl_orig.points[ i ].y * pl_orig.points[ i ].y +
+                                  pl_orig.points[ i ].z * pl_orig.points[ i ].z );
+        if ( range < blind )
+        {
+            continue;
+        }
+        Eigen::Vector3d pt_vec;
+        PointType       added_pt;
+        added_pt.x = pl_orig.points[ i ].x;
+        added_pt.y = pl_orig.points[ i ].y;
+        added_pt.z = pl_orig.points[ i ].z;
+        added_pt.intensity = pl_orig.points[ i ].intensity;
+        added_pt.normal_x = 0;
+        added_pt.normal_y = 0;
+        added_pt.normal_z = 0;
+        double yaw_angle = std::atan2( added_pt.y, added_pt.x ) * 57.3;
+        if ( yaw_angle >= 180.0 )
+            yaw_angle -= 360.0;
+        if ( yaw_angle <= -180.0 )
+            yaw_angle += 360.0;
+        added_pt.curvature = ( pl_orig.points[ i ].time / 1e9 ) * 1000.0;
+        pl_processed.points.push_back( added_pt );
+
+    }    
+    pub_func( pl_processed, pub_full, msg->header.stamp );
+    pub_func( pl_processed, pub_surf, msg->header.stamp );
+    pub_func( pl_processed, pub_corn, msg->header.stamp );
 }
 
-void velo16_handler1( const sensor_msgs::PointCloud2::ConstPtr &msg )
-{
-    // TODO
-}
 
-namespace ouster_ros {
-
-struct EIGEN_ALIGN16 Point {
-    PCL_ADD_POINT4D;
-    float intensity;
-    uint32_t t;
-    uint16_t reflectivity;
-    uint8_t ring;
-    uint16_t ambient;
-    uint32_t range;
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-};
-}  // namespace ouster_ros
-
-// clang-format off
-POINT_CLOUD_REGISTER_POINT_STRUCT(ouster_ros::Point,
-    (float, x, x)
-    (float, y, y)
-    (float, z, z)
-    (float, intensity, intensity)
-    // use std::uint32_t to avoid conflicting with pcl::uint32_t
-    (std::uint32_t, t, t)
-    (std::uint16_t, reflectivity, reflectivity)
-    (std::uint8_t, ring, ring)
-    (std::uint16_t, ambient, ambient)
-    (std::uint32_t, range, range)
-)
-// clang-format on
 
 void oust64_handler(const sensor_msgs::PointCloud2::ConstPtr &msg)
 {
@@ -378,6 +391,49 @@ void oust64_handler(const sensor_msgs::PointCloud2::ConstPtr &msg)
     pub_func( pl_processed, pub_full, msg->header.stamp );
     pub_func( pl_processed, pub_surf, msg->header.stamp );
     pub_func( pl_processed, pub_corn, msg->header.stamp );
+}
+
+void rs32_handler(const sensor_msgs::PointCloud2::ConstPtr &msg)
+{
+    printf("=======================rs32_handler=======================\n");
+    pcl::PointCloud< PointType > pl_processed;
+    pcl::PointCloud<robosense_ros::Point> pl_orig;
+    pcl::fromROSMsg(*msg, pl_orig);
+    int plsize = pl_orig.points.size();
+
+    if (plsize == 0) return;
+    // pl_surf.reserve(plsize);
+    double time_stamp = msg->header.stamp.toSec();
+    pl_processed.clear();
+    pl_processed.reserve( pl_orig.points.size() );
+
+    for ( int i = 0; i < pl_orig.points.size(); i++ )
+    {
+        if(has_nan(pl_orig.points[ i ])) continue;
+        double range = std::sqrt( pl_orig.points[ i ].x * pl_orig.points[ i ].x + pl_orig.points[ i ].y * pl_orig.points[ i ].y +
+                                  pl_orig.points[ i ].z * pl_orig.points[ i ].z );
+        if ( range < blind ) continue;
+        Eigen::Vector3d pt_vec;
+        PointType       added_pt;
+        added_pt.x = pl_orig.points[ i ].x;
+        added_pt.y = pl_orig.points[ i ].y;
+        added_pt.z = pl_orig.points[ i ].z;
+        added_pt.intensity = pl_orig.points[ i ].intensity;
+        added_pt.normal_x = 0;
+        added_pt.normal_y = 0;
+        added_pt.normal_z = 0;
+        // double yaw_angle = std::atan2( added_pt.y, added_pt.x ) * 57.3;
+        // if ( yaw_angle >= 180.0 )
+        //     yaw_angle -= 360.0;
+        // if ( yaw_angle <= -180.0 )
+        //     yaw_angle += 360.0;
+        added_pt.curvature = ( pl_orig.points[ i ].timestamp - pl_orig.points[ 0 ].timestamp ) * 1000.0;
+        pl_processed.points.push_back( added_pt );
+
+    }    
+    pub_func( pl_processed, pub_full, ros::Time().fromSec(pl_orig.points[ 0 ].timestamp) );
+    pub_func( pl_processed, pub_surf, ros::Time().fromSec(pl_orig.points[ 0 ].timestamp) );
+    pub_func( pl_processed, pub_corn, ros::Time().fromSec(pl_orig.points[ 0 ].timestamp) );
 }
 
 

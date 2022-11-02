@@ -71,6 +71,7 @@ struct Pose6D
     data_type gyr[3];
 };
 
+
 template <typename T = double>
 inline Eigen::Matrix<T, 3, 3> vec_to_hat(Eigen::Matrix<T, 3, 1> &omega)
 {
