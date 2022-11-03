@@ -8,7 +8,7 @@
     <param name="map_output_dir" type="string" value="$(env HOME)/r3live_output" />
     <rosparam command="load" file="$(find r3live)/../config/r3live_config.yaml" />
     
-    <!-- set LiDAR type as ouster-64 spining LiDAR -->
+    <!-- set LiDAR type as velodyne spining LiDAR -->
     <param name="/Lidar_front_end/lidar_type" type="int" value= "2" /> 
     <param name="/Lidar_front_end/point_step" type="int" value="1" />
     <param name="r3live_lio/lio_update_point_step" type="int" value="3" />

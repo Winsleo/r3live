@@ -1,5 +1,6 @@
 #include <ros/ros.h>
 #include <pcl_conversions/pcl_conversions.h>
+#include <pcl/common/transforms.h>
 #include <livox_ros_driver/CustomMsg.h>
 #include "../tools/tools_logger.hpp"
 #include "modify.h"
@@ -11,6 +12,10 @@ using namespace std;
 typedef pcl::PointXYZINormal PointType;
 
 ros::Publisher pub_full, pub_surf, pub_corn;
+
+// add rotation from Lidar to IMU  
+vector<double> lidar_imu_rotm;
+Eigen::Matrix4f lidar_rot;
 
 enum LID_TYPE
 {
@@ -117,6 +122,15 @@ int main( int argc, char **argv )
     n.param< int >( "Lidar_front_end/point_filter_num", point_filter_num, 1 );
     n.param< int >( "Lidar_front_end/point_step", g_LiDAR_sampling_point_step, 3 );
     n.param< int >( "Lidar_front_end/using_raw_point", g_if_using_raw_point, 1 );
+    if(n.getParam("r3live_lio/lidar_imu_rotm", lidar_imu_rotm)){
+        lidar_rot << lidar_imu_rotm[0], lidar_imu_rotm[1], lidar_imu_rotm[2], 0.0,
+                 lidar_imu_rotm[3], lidar_imu_rotm[4], lidar_imu_rotm[5], 0.0,
+                 lidar_imu_rotm[6], lidar_imu_rotm[7], lidar_imu_rotm[8], 0.0,
+                 0.0, 0.0, 0.0, 1.0;
+    }else{
+        cout << "No LiDAR->IMU extrinsics defined, assuming identity" << endl;
+        lidar_rot = Eigen::Matrix4f::Identity();
+    }
 
     jump_up_limit = cos( jump_up_limit / 180 * M_PI );
     jump_down_limit = cos( jump_down_limit / 180 * M_PI );
@@ -168,8 +182,11 @@ int main( int argc, char **argv )
 double vx, vy, vz;
 void   mid_handler( const sensor_msgs::PointCloud2::ConstPtr &msg )
 {
-    pcl::PointCloud< PointType > pl;
-    pcl::fromROSMsg( *msg, pl );
+    pcl::PointCloud< PointType > pl_prerot;//旋转前的点云
+    pcl::PointCloud< PointType > pl;//旋转处理后的点云
+    pcl::fromROSMsg( *msg, pl_prerot );
+    // Fix lidar orientation
+    pcl::transformPointCloud(pl_prerot, pl, lidar_rot);
 
     pcl::PointCloud< PointType > pl_corn, pl_surf;
     vector< orgtype >            types;
@@ -283,10 +300,14 @@ void horizon_handler( const livox_ros_driver::CustomMsg::ConstPtr &msg )
     {
         return;
     }
+    pcl::PointCloud<PointType> pl_surf_rot;
+    // Fix LiDAR rotation
+    pcl::transformPointCloud(pl_surf, pl_surf_rot, lidar_rot);
+
     ros::Time ct;
     ct.fromNSec( msg->timebase );
     pub_func( pl_full, pub_full, msg->header.stamp );
-    pub_func( pl_surf, pub_surf, msg->header.stamp );
+    pub_func( pl_surf_rot, pub_surf, msg->header.stamp );
     pub_func( pl_corn, pub_corn, msg->header.stamp );
 }
 
@@ -331,9 +352,12 @@ void velo16_handler( const sensor_msgs::PointCloud2::ConstPtr &msg )
         pl_processed.points.push_back( added_pt );
 
     }    
-    pub_func( pl_processed, pub_full, msg->header.stamp );
-    pub_func( pl_processed, pub_surf, msg->header.stamp );
-    pub_func( pl_processed, pub_corn, msg->header.stamp );
+    pcl::PointCloud< PointType > pl_processed_rot;
+    // Fix LiDAR rotation
+    pcl::transformPointCloud(pl_processed, pl_processed_rot, lidar_rot);
+    pub_func( pl_processed_rot, pub_full, msg->header.stamp );
+    pub_func( pl_processed_rot, pub_surf, msg->header.stamp );
+    pub_func( pl_processed_rot, pub_corn, msg->header.stamp );
 }
 
 
@@ -388,14 +412,16 @@ void oust64_handler(const sensor_msgs::PointCloud2::ConstPtr &msg)
             }
         }
     }
-    pub_func( pl_processed, pub_full, msg->header.stamp );
-    pub_func( pl_processed, pub_surf, msg->header.stamp );
-    pub_func( pl_processed, pub_corn, msg->header.stamp );
+    pcl::PointCloud< PointType > pl_processed_rot;
+    // Fix LiDAR rotation
+    pcl::transformPointCloud(pl_processed, pl_processed_rot, lidar_rot);
+    pub_func( pl_processed_rot, pub_full, msg->header.stamp );
+    pub_func( pl_processed_rot, pub_surf, msg->header.stamp );
+    pub_func( pl_processed_rot, pub_corn, msg->header.stamp );
 }
 
 void rs32_handler(const sensor_msgs::PointCloud2::ConstPtr &msg)
 {
-    printf("=======================rs32_handler=======================\n");
     pcl::PointCloud< PointType > pl_processed;
     pcl::PointCloud<robosense_ros::Point> pl_orig;
     pcl::fromROSMsg(*msg, pl_orig);
@@ -403,7 +429,6 @@ void rs32_handler(const sensor_msgs::PointCloud2::ConstPtr &msg)
 
     if (plsize == 0) return;
     // pl_surf.reserve(plsize);
-    double time_stamp = msg->header.stamp.toSec();
     pl_processed.clear();
     pl_processed.reserve( pl_orig.points.size() );
 
@@ -427,13 +452,16 @@ void rs32_handler(const sensor_msgs::PointCloud2::ConstPtr &msg)
         //     yaw_angle -= 360.0;
         // if ( yaw_angle <= -180.0 )
         //     yaw_angle += 360.0;
-        added_pt.curvature = ( pl_orig.points[ i ].timestamp - pl_orig.points[ 0 ].timestamp ) * 1000.0;
+        added_pt.curvature = ( pl_orig.points[ i ].timestamp - pl_orig.points[ 0 ].timestamp ) * 1000.0;//unit: ms
         pl_processed.points.push_back( added_pt );
 
-    }    
-    pub_func( pl_processed, pub_full, ros::Time().fromSec(pl_orig.points[ 0 ].timestamp) );//第一个点的时间戳才是一帧开始的时间
-    pub_func( pl_processed, pub_surf, ros::Time().fromSec(pl_orig.points[ 0 ].timestamp) );//消息头的时间戳是一帧结束的时间
-    pub_func( pl_processed, pub_corn, ros::Time().fromSec(pl_orig.points[ 0 ].timestamp) );
+    }
+    pcl::PointCloud< PointType > pl_processed_rot;
+    // Fix LiDAR rotation
+    pcl::transformPointCloud(pl_processed, pl_processed_rot, lidar_rot);
+    pub_func( pl_processed_rot, pub_full, ros::Time().fromSec(pl_orig.points[ 0 ].timestamp) );//第一个点的时间戳才是一帧开始的时间
+    pub_func( pl_processed_rot, pub_surf, ros::Time().fromSec(pl_orig.points[ 0 ].timestamp) );//消息头的时间戳是一帧结束的时间
+    pub_func( pl_processed_rot, pub_corn, ros::Time().fromSec(pl_orig.points[ 0 ].timestamp) );
 }
 
 

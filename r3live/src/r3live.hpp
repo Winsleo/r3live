@@ -391,6 +391,14 @@ public:
             get_ros_parameter( m_ros_node_handle, "r3live_lio/long_rang_pt_dis", m_long_rang_pt_dis, 500.0 );
             get_ros_parameter( m_ros_node_handle, "r3live_lio/publish_feature_map", m_if_publish_feature_map, false );
             get_ros_parameter( m_ros_node_handle, "r3live_lio/lio_update_point_step", m_lio_update_point_step, 1 );
+            //add translation from Lidar to IMU 
+            vector<double> lidar_imu_t;
+            if(m_ros_node_handle.getParam("r3live_lio/lidar_imu_t", lidar_imu_t)){
+                Lidar_offset_to_IMU<<lidar_imu_t[0],lidar_imu_t[1],lidar_imu_t[2];
+            }else{
+                cout << "No LiDAR->IMU extrinsics defined, assuming identity" << endl;
+                Lidar_offset_to_IMU << 0,0,0;
+            }
         }
         if ( 1 )
         {
@@ -419,7 +427,7 @@ public:
 
         m_lio_state_fp = fopen( std::string(m_map_output_dir).append("/lic_lio.log").c_str(), "w+");
         m_lio_costtime_fp = fopen(std::string(m_map_output_dir).append("/lic_lio_costtime.log").c_str(), "w+");
-        m_thread_pool_ptr->commit_task(&R3LIVE::service_LIO_update, this);
+        m_thread_pool_ptr->commit_task(&R3LIVE::service_LIO_update, this);//开启service_LIO_update线程
              
     }
     ~R3LIVE(){};

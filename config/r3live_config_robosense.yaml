@@ -11,7 +11,7 @@ r3live_common:
    minimum_pts_size: 0.01           # The minimum distance for every two points in Global map (unit in meter). [default = 0.01] 
    image_downsample_ratio: 1        # The downsample ratio of the input image. [default = 1]
    estimate_i2c_extrinsic: 1        # If enable estimate the extrinsic between camera and IMU. [default = 1] 
-   estimate_intrinsic: 1            # If enable estimate the online intrinsic calibration of the camera lens. [default = 1] 
+   estimate_intrinsic: 0            # If enable estimate the online intrinsic calibration of the camera lens. [default = 1] 
    maximum_vio_tracked_pts: 600     # The maximum points for tracking. [default = 600]
    append_global_map_point_step: 4  # The point step of append point to global map. [default = 4]
 
@@ -41,9 +41,18 @@ r3live_vio:
    
 r3live_lio:        
    lio_update_point_step: 4   # Point step used for LIO update.  
-   max_iteration: 2           # Maximum times of LIO esikf.
+   max_iteration: 5           # Maximum times of LIO esikf.
    lidar_time_delay: 0        # The time-offset between LiDAR and IMU, provided by user. 
    filter_size_corner: 0.30   
    filter_size_surf: 0.30
    filter_size_surf_z: 0.30
    filter_size_map: 0.30
+   lidar_imu_r:
+      # from Lidar to IMU
+      #[1, 0, 0,
+      # 0, 0, 1,
+      # 0, -1, 0]
+      [-0.999987, -0.00182104, -0.00456148, 
+       0.00185446, -0.99997, -0.00733234, 
+       -0.00454799, -0.00734071, 0.999963] 
+   lidar_imu_t: [-0.00230593, -0.00279901, 0.20975]
