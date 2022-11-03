@@ -431,8 +431,8 @@ void rs32_handler(const sensor_msgs::PointCloud2::ConstPtr &msg)
         pl_processed.points.push_back( added_pt );
 
     }    
-    pub_func( pl_processed, pub_full, ros::Time().fromSec(pl_orig.points[ 0 ].timestamp) );
-    pub_func( pl_processed, pub_surf, ros::Time().fromSec(pl_orig.points[ 0 ].timestamp) );
+    pub_func( pl_processed, pub_full, ros::Time().fromSec(pl_orig.points[ 0 ].timestamp) );//第一个点的时间戳才是一帧开始的时间
+    pub_func( pl_processed, pub_surf, ros::Time().fromSec(pl_orig.points[ 0 ].timestamp) );//消息头的时间戳是一帧结束的时间
     pub_func( pl_processed, pub_corn, ros::Time().fromSec(pl_orig.points[ 0 ].timestamp) );
 }
 

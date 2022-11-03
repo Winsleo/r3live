@@ -1,6 +1,6 @@
 <launch>
     <!-- Subscribed topics -->
-    <param name="/LiDAR_pointcloud_topic" type="string" value= "/rslidar_points" />
+    <param name="/LiDAR_pointcloud_topic" type="string" value= "/laser_cloud_flat" />
     <param name="/IMU_topic" type="string" value= "/imu/data" />
     <param name="/Image_topic" type="string" value= "/flir_adk/image_raw" />
     <param name="map_output_dir" type="string" value="$(env HOME)/r3live_output" />

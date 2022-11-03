@@ -2,7 +2,7 @@
     <node pkg="image_transport" type="republish" name="republish" args="compressed in:=/flir_adk/image_raw raw out:=/flir_adk/image_raw" output="screen" respawn="true"/>
     <node pkg="rs_to_velodyne" name="rs_to_velodyne" type="rs_to_velodyne"  args="XYZIRT XYZIRT"   output="screen"/>
     <!-- Subscribed topics -->
-    <param name="/LiDAR_pointcloud_topic" type="string" value= "/velodyne_points" />
+    <param name="/LiDAR_pointcloud_topic" type="string" value= "/laser_cloud_flat" />
     <param name="/IMU_topic" type="string" value= "/imu/data" />
     <param name="/Image_topic" type="string" value= "/flir_adk/image_raw" />
     <param name="map_output_dir" type="string" value="$(env HOME)/r3live_output" />

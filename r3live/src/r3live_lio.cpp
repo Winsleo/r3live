@@ -175,7 +175,7 @@ bool R3LIVE::get_pointcloud_data_from_ros_message( sensor_msgs::PointCloud2::Con
         }
     }
 }
-
+//获取一帧雷达点云及其对应的IMU数据 -> MeasureGroup
 bool R3LIVE::sync_packages( MeasureGroup &meas )
 {
     if ( lidar_buffer.empty() || imu_buffer_lio.empty() )
@@ -193,7 +193,7 @@ bool R3LIVE::sync_packages( MeasureGroup &meas )
         }
         // pcl::fromROSMsg(*(lidar_buffer.front()), *(meas.lidar));
         meas.lidar_beg_time = lidar_buffer.front()->header.stamp.toSec();
-        lidar_end_time = meas.lidar_beg_time + meas.lidar->points.back().curvature / double( 1000 );
+        lidar_end_time = meas.lidar_beg_time + meas.lidar->points.back().curvature / double( 1000 );//单位s，curvature单位是ms
         meas.lidar_end_time = lidar_end_time;
         // printf("Input LiDAR time = %.3f, %.3f\n", meas.lidar_beg_time, meas.lidar_end_time);
         // printf_line_mem_MB;
@@ -213,7 +213,7 @@ bool R3LIVE::sync_packages( MeasureGroup &meas )
         imu_time = imu_buffer_lio.front()->header.stamp.toSec();
         if ( imu_time > lidar_end_time + 0.02 )
             break;
-        meas.imu.push_back( imu_buffer_lio.front() );
+        meas.imu.push_back( imu_buffer_lio.front() );//压入IMU数据
         imu_buffer_lio.pop_front();
     }
 
@@ -503,7 +503,7 @@ void R3LIVE::feat_points_cbk( const sensor_msgs::PointCloud2::ConstPtr &msg_in )
         lidar_buffer.clear();
     }
     // ROS_INFO("get point cloud at time: %.6f", msg->header.stamp.toSec());
-    lidar_buffer.push_back( msg );
+    lidar_buffer.push_back( msg );//lidar_buffer压入雷达数据
     last_timestamp_lidar = msg->header.stamp.toSec();
     mtx_buffer.unlock();
     sig_buffer.notify_all();
@@ -553,7 +553,7 @@ int R3LIVE::service_LIO_update()
     //------------------------------------------------------------------------------------------------------
     ros::Rate rate( 5000 );
     bool      status = ros::ok();
-    g_camera_lidar_queue.m_liar_frame_buf = &lidar_buffer;
+    g_camera_lidar_queue.m_liar_frame_buf = &lidar_buffer;// 相机雷达数据队列 的 雷达buf 指向 lidar_buffer
     set_initial_state_cov( g_lio_state );
     while ( ros::ok() )
     {
