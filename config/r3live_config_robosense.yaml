@@ -5,6 +5,7 @@ Lidar_front_end:
    point_step: 1   # 扫描点云数据的跨度，降采样跨度
    
 r3live_common:
+   if_save_pose_image: 0            # If recording camera pose and image. [default = 0]
    if_dump_log: 0                   # If recording ESIKF update log. [default = 0]
    record_offline_map: 1            # If recording offline map. [default = 1]
    pub_pt_minimum_views: 3          # Publish points which have been render up to "pub_pt_minimum_views" time. [default = 3]
@@ -19,7 +20,7 @@ r3live_common:
    tracker_minimum_depth: 1         # 视觉跟踪点的最小深度
    tracker_maximum_depth: 10        # 视觉跟踪点的最大深度
    track_windows_size: 40           # 滑动窗口尺寸
-   esikf_iter_times: 2              # esikf迭代次数
+   esikf_iter_times: 20             # esikf迭代次数
    
 
 r3live_vio:
@@ -53,11 +54,8 @@ r3live_lio:
    filter_size_surf: 0.30
    filter_size_surf_z: 0.30
    filter_size_map: 0.30
-   lidar_imu_r:
-      # from Lidar to IMU
-      #[1, 0, 0,
-      # 0, 0, 1,
-      # 0, -1, 0]
+   # from Lidar to IMU
+   lidar_imu_r: 
       [0.999958 , 0.008981 , 0.002000,  
       -0.008960 , 0.999903 , -0.010619, 
       -0.002096 , 0.010601 , 0.999942]  

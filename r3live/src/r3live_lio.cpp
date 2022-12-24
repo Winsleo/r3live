@@ -1047,7 +1047,7 @@ int R3LIVE::service_LIO_update()
             geometry_msgs::Quaternion geoQuat = tf::createQuaternionMsgFromRollPitchYaw( euler_cur( 0 ), euler_cur( 1 ), euler_cur( 2 ) );
             odomAftMapped.header.frame_id = "world";
             odomAftMapped.child_frame_id = "/aft_mapped";
-            odomAftMapped.header.stamp = ros::Time::now(); // ros::Time().fromSec(last_timestamp_lidar);
+            odomAftMapped.header.stamp = ros::Time().fromSec(last_timestamp_lidar);
             odomAftMapped.pose.pose.orientation.x = geoQuat.x;
             odomAftMapped.pose.pose.orientation.y = geoQuat.y;
             odomAftMapped.pose.pose.orientation.z = geoQuat.z;

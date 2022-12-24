@@ -519,6 +519,19 @@ void R3LIVE::publish_camera_odom( std::shared_ptr< Image_frame > &image, double 
     camera_path.header.frame_id = "world";
     camera_path.poses.push_back( msg_pose );
     pub_path_cam.publish( camera_path );
+    if(if_save_pose_image){
+        //输出camera pose信息
+        fprintf( m_camera_pose_fp, "%.9f,%.9f,%.9f,%.9f,%.9f,%.9f,%.9f,%.9f\n",image->m_timestamp , image->m_pose_w2c_t(0), image->m_pose_w2c_t(1), image->m_pose_w2c_t(2)
+        , image->m_pose_w2c_q.x(), image->m_pose_w2c_q.y(), image->m_pose_w2c_q.z(), image->m_pose_w2c_q.w());
+        fflush( m_camera_pose_fp );
+
+        stringstream ss;
+        ss.setf(std::ios::fixed);
+        ss.precision(9);
+        ss<<image->m_timestamp;
+        //输出图片
+        cv::imwrite( m_image_output_dir + ss.str() + ".jpg", image->m_img);
+    }
 }
 
 void R3LIVE::publish_track_pts( Rgbmap_tracker &tracker )
@@ -1087,6 +1100,10 @@ char R3LIVE::cv_keyboard_callback()
 // ANCHOR -  service_VIO_update
 void R3LIVE::service_VIO_update()
 {
+    if(if_save_pose_image){
+        fprintf( m_camera_pose_fp,"timestamp,x,y,z,qx,qy,qz,qw\n");
+        fflush( m_camera_pose_fp );
+    }
     // Init cv windows for debug
     op_track.set_intrinsic( g_cam_K, g_cam_dist * 0, cv::Size( m_vio_image_width / m_vio_scale_factor, m_vio_image_heigh / m_vio_scale_factor ) );
     op_track.m_maximum_vio_tracked_pts = m_maximum_vio_tracked_pts;

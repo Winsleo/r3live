@@ -122,13 +122,13 @@ int main( int argc, char **argv )
     n.param< int >( "Lidar_front_end/point_filter_num", point_filter_num, 1 );
     n.param< int >( "Lidar_front_end/point_step", g_LiDAR_sampling_point_step, 3 );
     n.param< int >( "Lidar_front_end/using_raw_point", g_if_using_raw_point, 1 );
-    if(n.getParam("r3live_lio/lidar_imu_rotm", lidar_imu_rotm)){
+    if(n.getParam("r3live_lio/lidar_imu_r", lidar_imu_rotm)){
         lidar_rot << lidar_imu_rotm[0], lidar_imu_rotm[1], lidar_imu_rotm[2], 0.0,
                  lidar_imu_rotm[3], lidar_imu_rotm[4], lidar_imu_rotm[5], 0.0,
                  lidar_imu_rotm[6], lidar_imu_rotm[7], lidar_imu_rotm[8], 0.0,
                  0.0, 0.0, 0.0, 1.0;
     }else{
-        cout << "No LiDAR->IMU extrinsics defined, assuming identity" << endl;
+        cout << "No LiDAR->IMU rotation defined, assuming identity" << endl;
         lidar_rot = Eigen::Matrix4f::Identity();
     }
 
